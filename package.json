@@ -1,0 +1,19 @@
+{
+  "name": "pure-http-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie": "^0.4.2",
+    "dotenv": "^16.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^4.4.0"
+  }
+}
