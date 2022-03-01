@@ -32,17 +32,20 @@ const logIn = async(username, password, response) => {
                 exp: Math.floor(Date.now()/1000) + exp
             }, privateKey);
             setCookie(response, token, exp);
-            response.end("logged In successfully");
+            const jsonResponse = JSON.stringify({message: "logged In successfully"});
+            response.end(jsonResponse);
         }
     } catch (error) {
         response.statusCode = 400;
-        response.end(error.message);
+        const jsonResponse = JSON.stringify({message: error.message});
+        response.end(jsonResponse);
     }
 }
 
 const logOut = (response) => {
     removeCookie(response);
-    response.end("logged out successfully");
+    const jsonResponse = JSON.stringify({message: "logged out successfully"});
+    response.end(jsonResponse);
 }
 
 const register = async(username, password, firstname, lastname, response) => {
@@ -71,13 +74,15 @@ const register = async(username, password, firstname, lastname, response) => {
                 firstname: firstname,
                 lastname: lastname
             })
-            response.end("registered successfully with username: " + username);
+            const jsonResponse = JSON.stringify({message:"registered successfully with username: " + username});
+            response.end(jsonResponse);
         }
 
     } catch (error) {
         if (clientIsConnected) client.close();
         response.statusCode = 400;
-        response.end(error.message);
+        const jsonResponse = JSON.stringify({message: error.message});
+        response.end(jsonResponse);
     }
 }
 

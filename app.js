@@ -3,6 +3,7 @@ const http = require("http");
 
 const { logIn, logOut, register } = require("./auth");
 const { decodeCookie } = require("./cookie");
+const { transformJsonAndUrlencoded } = require("./utils");
 
 http.createServer((request, response) => {
     const { method, url } = request;
@@ -12,9 +13,11 @@ http.createServer((request, response) => {
         if (request.headers.cookie) {
             const decoded = decodeCookie(request);
             const username = decoded.user.username;
-            response.end("You are authenticated with username: " + username);
+            const jsonMessage = JSON.stringify({message: "You are authenticated with username: " + username});
+            response.end(jsonMessage);
         } else {
-            response.end("not logged in.");
+            const jsonMessage = JSON.stringify({message: "not logged in."});
+            response.end(jsonMessage);
         }
     }
 
@@ -23,14 +26,15 @@ http.createServer((request, response) => {
         let data = "";
         request.on("data", (chunk) => {
             data += chunk;
+            data = transformJsonAndUrlencoded(data);
         });
 
         request.on("end", () => {
-            const jsonData = JSON.parse(data);
-            const { username, password } = jsonData;
+            const { username, password } = data;
             if (!username || !password) {
                 response.statusCode = 404;
-                response.end("missing username or password")
+                const jsonMessage = JSON.stringify({message: "missing username or password"});
+                response.end(jsonMessage)
                 return;
             }
             logIn(username, password, response);            
@@ -44,7 +48,8 @@ http.createServer((request, response) => {
             logOut(response);
         } else {
             response.statusCode = 400;
-            response.end("You already logged out.");
+            const jsonMessage = JSON.stringify({message: "You already logged out."});
+            response.end(jsonMessage);
         }
     }
 
@@ -53,14 +58,15 @@ http.createServer((request, response) => {
         let data = "";
         request.on("data", (chunk) => {
             data += chunk;
+            data = transformJsonAndUrlencoded(data);
         })
 
         request.on("end", () => {
-            const jsonData = JSON.parse(data);
-            const { username, password, firstname, lastname } = jsonData;
+            const { username, password, firstname, lastname } = data;
             if (!username || !password || !firstname || !lastname) {
                 response.statusCode = 400;
-                response.end("missing username, password, firstname or lastname");
+                const jsonResponse = ({message:"missing username, password, firstname or lastname"});
+                response.end(jsonResponse);
                 return;
             }
             register(username, password, firstname, lastname, response);            
@@ -69,8 +75,34 @@ http.createServer((request, response) => {
     
     else {
         response.statusCode = 500;
-        response.end("route and method does not exist.");
+        const jsonResponse = ({message:"route and method does not exist."});
+        response.end(jsonResponse);
     }
 })
 
 .listen(process.env.PORT || 3000);
+
+/*
+TESTING
+
+// GET '/'
+fetch("http://localhost:3000").then(res => res.json()).then(data => console.log(data))
+
+// LOGIN
+fetch("http://localhost:3000/login",{
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({username:"admin",password:"password"})
+}).then(res => res.json()).then(data => console.log(data))
+
+// REGISTER
+fetch("http://localhost:3000/register",{
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({username:"admin",password:"password",firstname:"firstnametest", lastname:"lastnametest"})
+}).then(res => res.json()).then(data => console.log(data))
+
+// LOG OUT
+fetch("http://localhost:3000/logout",{method: "POST"}).then(res => res.json()).then(data => console.log(data))
+
+*/
