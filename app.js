@@ -3,9 +3,9 @@ const http = require("http");
 
 const { logIn, logOut, register } = require("./auth");
 const { decodeCookie } = require("./cookie");
-const { transformJsonAndUrlencoded } = require("./utils");
+const { transformJsonAndUrlencoded, jsonMessage } = require("./utils");
 
-http.createServer((request, response) => {
+const app = http.createServer((request, response) => {
     const { method, url } = request;
 
     // '/'
@@ -13,11 +13,9 @@ http.createServer((request, response) => {
         if (request.headers.cookie) {
             const decoded = decodeCookie(request);
             const username = decoded.user.username;
-            const jsonMessage = JSON.stringify({message: "You are authenticated with username: " + username});
-            response.end(jsonMessage);
+            response.end(jsonMessage("You are authenticated with username: " + username));
         } else {
-            const jsonMessage = JSON.stringify({message: "not logged in."});
-            response.end(jsonMessage);
+            response.end(jsonMessage("not logged in."));
         }
     }
 
@@ -26,15 +24,14 @@ http.createServer((request, response) => {
         let data = "";
         request.on("data", (chunk) => {
             data += chunk;
-            data = transformJsonAndUrlencoded(data);
+            data = transformJsonAndUrlencoded(data, request.headers["content-type"]);
         });
 
         request.on("end", () => {
             const { username, password } = data;
             if (!username || !password) {
                 response.statusCode = 404;
-                const jsonMessage = JSON.stringify({message: "missing username or password"});
-                response.end(jsonMessage)
+                response.end(jsonMessage("missing username or password"))
                 return;
             }
             logIn(username, password, response);            
@@ -48,8 +45,7 @@ http.createServer((request, response) => {
             logOut(response);
         } else {
             response.statusCode = 400;
-            const jsonMessage = JSON.stringify({message: "You already logged out."});
-            response.end(jsonMessage);
+            response.end(jsonMessage("You already logged out."));
         }
     }
 
@@ -58,15 +54,14 @@ http.createServer((request, response) => {
         let data = "";
         request.on("data", (chunk) => {
             data += chunk;
-            data = transformJsonAndUrlencoded(data);
+            data = transformJsonAndUrlencoded(data, request.headers["content-type"]);
         })
 
         request.on("end", () => {
             const { username, password, firstname, lastname } = data;
             if (!username || !password || !firstname || !lastname) {
                 response.statusCode = 400;
-                const jsonResponse = ({message:"missing username, password, firstname or lastname"});
-                response.end(jsonResponse);
+                response.end(jsonMessage("missing username, password, firstname or lastname"));
                 return;
             }
             register(username, password, firstname, lastname, response);            
@@ -75,12 +70,12 @@ http.createServer((request, response) => {
     
     else {
         response.statusCode = 500;
-        const jsonResponse = ({message:"route and method does not exist."});
-        response.end(jsonResponse);
+        response.end(jsonMessage("route and method does not exist."));
     }
 })
 
-.listen(process.env.PORT || 3000);
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log("running on port", port));
 
 /*
 TESTING

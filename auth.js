@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { MongoClient } = require("mongodb");
 
 const { setCookie, removeCookie } = require("./cookie");
+const { jsonMessage } = require("./utils");
 
 const logIn = async(username, password, response) => {
     // PREPARATION
@@ -32,20 +33,17 @@ const logIn = async(username, password, response) => {
                 exp: Math.floor(Date.now()/1000) + exp
             }, privateKey);
             setCookie(response, token, exp);
-            const jsonResponse = JSON.stringify({message: "logged In successfully"});
-            response.end(jsonResponse);
+            response.end(jsonMessage("logged In successfully"));
         }
     } catch (error) {
         response.statusCode = 400;
-        const jsonResponse = JSON.stringify({message: error.message});
-        response.end(jsonResponse);
+        response.end(jsonMessage(error.message));
     }
 }
 
 const logOut = (response) => {
     removeCookie(response);
-    const jsonResponse = JSON.stringify({message: "logged out successfully"});
-    response.end(jsonResponse);
+    response.end(jsonMessage("logged out successfully"));
 }
 
 const register = async(username, password, firstname, lastname, response) => {
@@ -74,15 +72,13 @@ const register = async(username, password, firstname, lastname, response) => {
                 firstname: firstname,
                 lastname: lastname
             })
-            const jsonResponse = JSON.stringify({message:"registered successfully with username: " + username});
-            response.end(jsonResponse);
+            response.end(jsonMessage("registered successfully with username: " + username));
         }
 
     } catch (error) {
         if (clientIsConnected) client.close();
         response.statusCode = 400;
-        const jsonResponse = JSON.stringify({message: error.message});
-        response.end(jsonResponse);
+        response.end(jsonMessage(error.message));
     }
 }
 

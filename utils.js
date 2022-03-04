@@ -1,12 +1,22 @@
-const querystring = require('querystring');
 
-function transformJsonAndUrlencoded(data) {
-    try {
-        const json = JSON.parse(data);
-        return json;
-    } catch(err) {
-        return querystring.parse(data);
+// THIS WORKS JUST FINE TO REPLACE EXPRESS'S BODY-PARSER() AND URLENCODED()
+function transformJsonAndUrlencoded(data, contentType) {
+    if (contentType === "application/x-www-form-urlencoded") {
+        const params = new URLSearchParams(data);
+        const entries = params.entries();
+        const result = {};
+        for (const [key, value] of entries) {
+            result[key] = value;
+        }
+        return result;
+    } else if (contentType === "application/json") {
+        return JSON.parse(data);
     }
 }
 
-module.exports = { transformJsonAndUrlencoded };
+function jsonMessage(message) {
+    return JSON.stringify({message: message});
+}
+
+module.exports = { transformJsonAndUrlencoded, jsonMessage };
+
