@@ -21,10 +21,11 @@ const app = http.createServer((request, response) => {
 
     // '/login'
     else if (method === "POST" && url === "/login") {
-        let data = "";
+        let str = "";
+        let data;
         request.on("data", (chunk) => {
-            data += chunk;
-            data = transformJsonAndUrlencoded(data, request.headers["content-type"]);
+            str += chunk;
+            data = transformJsonAndUrlencoded(str, request.headers["content-type"]);
         });
 
         request.on("end", () => {
@@ -51,11 +52,12 @@ const app = http.createServer((request, response) => {
 
     // '/register'
     else if (method === "POST" && url === "/register") {
-        let data = "";
+        let str = "";
+        let data;
         request.on("data", (chunk) => {
-            data += chunk;
-            data = transformJsonAndUrlencoded(data, request.headers["content-type"]);
-        })
+            str += chunk;
+            data = transformJsonAndUrlencoded(str, request.headers["content-type"]);
+        });
 
         request.on("end", () => {
             const { username, password, firstname, lastname } = data;
