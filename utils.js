@@ -9,9 +9,9 @@ function transformJsonAndUrlencoded(data, contentType) {
             result[key] = value;
         }
         return result;
-    } else if (contentType === "application/json") {
-        return JSON.parse(data);
     }
+    else if (contentType === "application/json") return JSON.parse(data);
+    else throw new Error("The data type is not url-encoded nor json!");
 }
 
 function jsonMessage(message) {
